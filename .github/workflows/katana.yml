@@ -1,0 +1,32 @@
+name: Katana Recon
+
+on:
+  workflow_dispatch:  # Enables manual trigger from GitHub UI
+
+jobs:
+  katana-run:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.21'
+
+    - name: Install Katana
+      run: |
+        go install github.com/projectdiscovery/katana/cmd/katana@latest
+        echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+
+    - name: Run Katana
+      run: |
+        katana -list all_clean.txt -depth 5 -fx -c 5 -rl 100 -ef woff,css,png,svg,jpg,woff2,jpeg,gif -o katana_active.txt
+
+    - name: Upload Results
+      uses: actions/upload-artifact@v3
+      with:
+        name: katana-results
+        path: katana_active.txt
